@@ -3,6 +3,9 @@ package com.wangc.androidvideostudy
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 
+/**
+ * GlSurfaceView显示
+ */
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
