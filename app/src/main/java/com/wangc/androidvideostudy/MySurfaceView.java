@@ -17,5 +17,6 @@ public class MySurfaceView extends GLSurfaceView {
 
         mGlRender = new MGlRender();
         setRenderer(mGlRender);
+
     }
 }

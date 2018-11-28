@@ -7,9 +7,11 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <com.wangc.androidvideostudy.MySurfaceView
+    <SurfaceView
+        android:id="@+id/sv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
     />
+
 
 </android.support.constraint.ConstraintLayout>
