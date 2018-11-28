@@ -17,6 +17,7 @@ import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.media.Image;
 import android.media.ImageReader;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
@@ -31,6 +32,11 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
@@ -108,11 +114,32 @@ public class Camera2Activity extends AppCompatActivity {
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
                 Log.e(TAG,"拍照数据："+bytes);
-                final Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                if (bitmap != null) {
-                    imageView.setImageBitmap(bitmap);
+//                final Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+//                if (bitmap != null) {
+//                    imageView.setImageBitmap(bitmap);
+//                }
+
+                //保存图片
+                try {
+                    File myDir = new File(Environment.getExternalStorageDirectory() + "/saved_images");
+                    myDir.mkdirs();
+                    String fname = "camera2.jpg";
+                    File file = new File (myDir, fname);
+                    if (file.exists ()) file.delete ();
+                    file.createNewFile();
+
+                    FileOutputStream outputStream = new FileOutputStream(file);
+                    outputStream.write(bytes);
+                    outputStream.close();
+                    Log.e(TAG,"保存成功："+file.getAbsolutePath());
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
                 image.close();
+
+
             }
         }, mHandler);
 
