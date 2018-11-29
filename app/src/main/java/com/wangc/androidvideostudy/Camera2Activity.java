@@ -17,6 +17,7 @@ import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.media.Image;
 import android.media.ImageReader;
+import android.media.MediaCodecList;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
@@ -259,6 +260,7 @@ public class Camera2Activity extends AppCompatActivity {
      * 拍照
      */
     private void takePicture() {
+
         if (mCameraDevice == null) return;
         // 创建拍照需要的CaptureRequest.Builder
         final CaptureRequest.Builder captureRequestBuilder;
