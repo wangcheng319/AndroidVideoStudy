@@ -17,7 +17,10 @@ import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.media.Image;
 import android.media.ImageReader;
-import android.media.MediaCodecList;
+import android.media.MediaCodec;
+import android.media.MediaCodecInfo;
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
@@ -33,6 +36,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -42,10 +46,13 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 
+import static android.media.MediaCodec.BUFFER_FLAG_CODEC_CONFIG;
+
 /**
  * 1、Camera2预览
- * 2、获取原始数据
- * 3、转为MP4保存
+ * 2、获取原始数据--YUV
+ * 3、显示YUV数据
+ * 4、转为MP4保存
  */
 public class Camera2Activity extends AppCompatActivity {
     private static final String TAG = "Camera2Activity";
@@ -82,6 +89,8 @@ public class Camera2Activity extends AppCompatActivity {
         setContentView(R.layout.activity_camera2);
         final ImageView imageView = findViewById(R.id.iv);
 
+
+
         //init surfaceview
         mSurfaceView = findViewById(R.id.sv);
         mSurfaceView.setKeepScreenOn(true);
@@ -115,10 +124,10 @@ public class Camera2Activity extends AppCompatActivity {
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
                 Log.e(TAG,"拍照数据："+bytes);
-//                final Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-//                if (bitmap != null) {
-//                    imageView.setImageBitmap(bitmap);
-//                }
+                final Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                if (bitmap != null) {
+                    imageView.setImageBitmap(bitmap);
+                }
 
                 //保存图片
                 try {
@@ -152,8 +161,16 @@ public class Camera2Activity extends AppCompatActivity {
             public void onImageAvailable(ImageReader reader) {
                 // 获取捕获的照片数据
                 Image image = reader.acquireLatestImage();
-                Log.i(TAG,"preview image format: " +image.getFormat());
+                Log.e(TAG,"preview image format: " +image.getFormat());
+                ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+                byte[] bytes = new byte[buffer.remaining()];
+                buffer.get(bytes);
 
+                try {
+                    startCodec(bytes,0,bytes.length);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 image.close();
             }
         }, null);
@@ -176,21 +193,110 @@ public class Camera2Activity extends AppCompatActivity {
         try {
             //获取摄像头数量
             String[] cameras = cameraManager.getCameraIdList();
-
             //获取摄像头参数
             CameraCharacteristics cameraCharacteristics = cameraManager.getCameraCharacteristics(cameras[0]);
-
             //权限检查
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
             //打开相机
             cameraManager.openCamera(cameras[0], stateCallback, mHandler);
-
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
     }
+
+
+    /**
+     * 开启编码
+     * @param bytes
+     * @param i
+     * @param length
+     */
+    private void startCodec(final byte[] bytes, int i, final int length) throws IOException {
+
+        File outFile = new File(Environment.getExternalStorageDirectory()+"/mycamera2.mp4");
+        final BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outFile));
+
+        MediaCodec mediaCodec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC);
+
+        MediaFormat mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, 1080, 1920);
+        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, 500000);
+        mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 15);
+        mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar);
+        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 5);
+
+
+        mediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+        mediaCodec.start();
+
+//        mediaCodec.setCallback(new MediaCodec.Callback() {
+//            @Override
+//            public void onInputBufferAvailable(MediaCodec codec, int index) {
+//                ByteBuffer byteBuffer = codec.getInputBuffer(index);
+//                byteBuffer.put(bytes);
+//                codec.queueInputBuffer(index,0,length,1,BUFFER_FLAG_CODEC_CONFIG);
+//            }
+//
+//            @Override
+//            public void onOutputBufferAvailable(MediaCodec codec, int index, MediaCodec.BufferInfo info) {
+//                if(index>-1){
+//                    ByteBuffer outputBuffer = codec.getOutputBuffer(index);
+//                    byte[] bb = new byte[info.size];
+//                    outputBuffer.get(bb);
+//                    try {
+//                        outputStream.write(bb);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                    codec.releaseOutputBuffer(index,false);
+//                }
+//            }
+//
+//            @Override
+//            public void onError(MediaCodec codec, MediaCodec.CodecException e) {
+//                codec.reset();
+//            }
+//
+//            @Override
+//            public void onOutputFormatChanged(MediaCodec codec, MediaFormat format) {
+//            }
+//        });
+
+
+        //向mediaCodec存数据
+        int inputBufferIndex = mediaCodec.dequeueInputBuffer(-1);
+        if (inputBufferIndex >= 0) {
+            ByteBuffer inputBuffer =  mediaCodec.getInputBuffer(inputBufferIndex);
+            inputBuffer.clear();
+            //存放新采集的数据
+            inputBuffer.put(bytes, 0, length);
+            mediaCodec.queueInputBuffer(inputBufferIndex, 0, length,  0, 0);
+        }
+
+        //从mediaCodec取数据
+        MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
+        int outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 0); //10
+        //循环解码，直到数据全部解码完成
+        while (outputBufferIndex >= 0) {
+            ByteBuffer outputBuffer = mediaCodec.getOutputBuffer(outputBufferIndex);
+
+            byte[] outData = new byte[bufferInfo.size];
+            outputBuffer.get(outData);
+
+            try {
+                outputStream.write(outData, 0, outData.length);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            mediaCodec.releaseOutputBuffer(outputBufferIndex, false);
+            bufferInfo = new MediaCodec.BufferInfo();
+            outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 0);
+        }
+
+    }
+
 
     private CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
         @Override
@@ -215,6 +321,9 @@ public class Camera2Activity extends AppCompatActivity {
     };
 
 
+    /**
+     * 开启预览
+     */
     private void createCameraPreviewSession() {
         try {
             mPreviewRequestBuilder  = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
@@ -260,7 +369,6 @@ public class Camera2Activity extends AppCompatActivity {
      * 拍照
      */
     private void takePicture() {
-
         if (mCameraDevice == null) return;
         // 创建拍照需要的CaptureRequest.Builder
         final CaptureRequest.Builder captureRequestBuilder;
@@ -285,6 +393,9 @@ public class Camera2Activity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 拍照回调
+     */
     private CameraCaptureSession.CaptureCallback captureCallback = new CameraCaptureSession.CaptureCallback() {
         @Override
         public void onCaptureStarted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, long timestamp, long frameNumber) {
@@ -308,30 +419,6 @@ public class Camera2Activity extends AppCompatActivity {
             } catch (CameraAccessException e) {
                 e.printStackTrace();
             }
-        }
-
-        @Override
-        public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
-            super.onCaptureFailed(session, request, failure);
-            Log.e(TAG,"onCaptureFailed");
-        }
-
-        @Override
-        public void onCaptureSequenceCompleted(@NonNull CameraCaptureSession session, int sequenceId, long frameNumber) {
-            super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
-            Log.e(TAG,"onCaptureSequenceCompleted");
-        }
-
-        @Override
-        public void onCaptureSequenceAborted(@NonNull CameraCaptureSession session, int sequenceId) {
-            super.onCaptureSequenceAborted(session, sequenceId);
-            Log.e(TAG,"onCaptureSequenceAborted");
-        }
-
-        @Override
-        public void onCaptureBufferLost(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull Surface target, long frameNumber) {
-            super.onCaptureBufferLost(session, request, target, frameNumber);
-            Log.e(TAG,"onCaptureBufferLost");
         }
     };
 
