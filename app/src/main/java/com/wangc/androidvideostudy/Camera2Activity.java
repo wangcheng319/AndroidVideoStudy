@@ -230,38 +230,6 @@ public class Camera2Activity extends AppCompatActivity {
         mediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         mediaCodec.start();
 
-//        mediaCodec.setCallback(new MediaCodec.Callback() {
-//            @Override
-//            public void onInputBufferAvailable(MediaCodec codec, int index) {
-//                ByteBuffer byteBuffer = codec.getInputBuffer(index);
-//                byteBuffer.put(bytes);
-//                codec.queueInputBuffer(index,0,length,1,BUFFER_FLAG_CODEC_CONFIG);
-//            }
-//
-//            @Override
-//            public void onOutputBufferAvailable(MediaCodec codec, int index, MediaCodec.BufferInfo info) {
-//                if(index>-1){
-//                    ByteBuffer outputBuffer = codec.getOutputBuffer(index);
-//                    byte[] bb = new byte[info.size];
-//                    outputBuffer.get(bb);
-//                    try {
-//                        outputStream.write(bb);
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                    codec.releaseOutputBuffer(index,false);
-//                }
-//            }
-//
-//            @Override
-//            public void onError(MediaCodec codec, MediaCodec.CodecException e) {
-//                codec.reset();
-//            }
-//
-//            @Override
-//            public void onOutputFormatChanged(MediaCodec codec, MediaFormat format) {
-//            }
-//        });
 
 
         //向mediaCodec存数据
