@@ -19,8 +19,10 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
@@ -65,6 +67,12 @@ public class Camera2Activity extends AppCompatActivity {
     private CaptureRequest mPreviewRequest;
 
 
+    private int width = 1280;
+    private int height = 720;
+    private int framerate = 30; //一秒30帧
+    private H264Encoder h264Encoder;
+
+
     private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -89,6 +97,11 @@ public class Camera2Activity extends AppCompatActivity {
         setContentView(R.layout.activity_camera2);
         final ImageView imageView = findViewById(R.id.iv);
 
+        if (supportH264Codec()){ //查询手机是否支持AVC编码
+            Log.e("TAG" , "support H264 hard codec");
+        }else {
+            Log.e("TAG" , "not support H264 hard codec");
+        }
 
 
         //init surfaceview
@@ -98,6 +111,8 @@ public class Camera2Activity extends AppCompatActivity {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
                 initCamera2();
+                h264Encoder = new H264Encoder(width,height,framerate);
+                h264Encoder.startEncoder();
             }
 
             @Override
@@ -166,10 +181,8 @@ public class Camera2Activity extends AppCompatActivity {
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
 
-                try {
-                    startCodec(bytes,0,bytes.length);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (h264Encoder != null){
+                    h264Encoder.putDate(bytes); //将一帧的数据传过去处理
                 }
                 image.close();
             }
@@ -183,6 +196,23 @@ public class Camera2Activity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private boolean supportH264Codec() {
+        if (Build.VERSION.SDK_INT >= 18){
+            int number = MediaCodecList.getCodecCount();
+            for (int i=number-1 ; i >0 ; i--){
+                MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
+                String[] types = codecInfo.getSupportedTypes();
+                //是否支持H.264(avc)的编码
+                for (int j = 0 ; j < types.length ; j++){
+                    if (types[j].equalsIgnoreCase("video/avc")){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -221,7 +251,7 @@ public class Camera2Activity extends AppCompatActivity {
         MediaCodec mediaCodec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC);
 
         MediaFormat mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, 1080, 1920);
-        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, 500000);
+        mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, 441000);
         mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 15);
         mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar);
         mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 5);
