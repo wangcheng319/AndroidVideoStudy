@@ -180,11 +180,11 @@ public class Camera2Activity extends AppCompatActivity {
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
 
-                try {
-                    startCodec(bytes);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    startCodec(bytes);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
 
                 image.close();
             }

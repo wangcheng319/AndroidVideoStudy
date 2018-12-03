@@ -1,17 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <SurfaceView
-        android:id="@+id/sv"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-    />
+    <Button
+        android:id="@+id/btn_audio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="录音"
+        android:onClick="onClick"/>
 
+    <Button
+        android:id="@+id/btn_camera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="相机"
+        android:onClick="onClick"/>
 
-</android.support.constraint.ConstraintLayout>
+    <Button
+        android:id="@+id/btn_camera2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="相机2"
+        android:onClick="onClick"/>
+
+    <Button
+        android:id="@+id/btn_extractor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="音视频合成"
+        android:onClick="onClick"/>
+
+    <Button
+        android:id="@+id/btn_jni"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="jni"
+        android:onClick="onClick"/>
+
+</LinearLayout>
