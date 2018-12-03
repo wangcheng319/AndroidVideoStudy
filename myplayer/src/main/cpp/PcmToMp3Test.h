@@ -24,7 +24,7 @@ public:
     PcmToMp3Test();
     ~PcmToMp3Test();
 
-    void enCode(const char *url);
+    void enCode();
 
 };
 

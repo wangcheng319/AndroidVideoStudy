@@ -37,5 +37,5 @@ public class Demo {
      */
     public native void setUser(User user);
 
-    public native void PcmToMp3(String path);
+    public native void PcmToMp3();
 }

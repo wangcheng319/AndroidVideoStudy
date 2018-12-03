@@ -8,7 +8,6 @@
 #include <deque>
 #include <vector>
 #include <android/bitmap.h>
-#include <PcmToMp3Test.h>
 
 #include "iostream"
 #include "PcmToMp3Test.h"
@@ -106,12 +105,12 @@ Java_com_wangc_androidvideostudy_Camera2Activity_tranBitmap(JNIEnv *env, jobject
 }
 
 
+
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_wangc_myplayer_Demo_PcmToMp3(JNIEnv *env, jobject instance, jstring path_) {
-    const char *path = env->GetStringUTFChars(path_, 0);
+Java_com_wangc_myplayer_Demo_PcmToMp3(JNIEnv *env, jobject instance) {
 
     mp3Test = new PcmToMp3Test();
+    mp3Test->enCode();
 
-    env->ReleaseStringUTFChars(path_, path);
 }

@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import com.wangc.myplayer.Demo;
+
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,6 +47,11 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
 
     private boolean isRecord = false;
     private File file;
+    private Demo demo;
+
+    static {
+        System.loadLibrary("native-lib");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +99,10 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
                         play();
                     }
                 }).start();
+                break;
+            case R.id.btn_tran:
+                demo = new Demo();
+                demo.PcmToMp3();
                 break;
         }
     }

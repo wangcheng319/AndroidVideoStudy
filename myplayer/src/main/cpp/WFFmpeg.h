@@ -13,6 +13,7 @@
 extern "C"
 {
 #include "libavformat/avformat.h"
+#include <libavcodec/avcodec.h>
 };
 
 
@@ -28,12 +29,13 @@ public:
 
 
 public:
-    WFFmpeg(WCallJava *callJava, const char *url);
+    WFFmpeg();
     ~WFFmpeg();
 
     void parpared();
     void decodeFFmpegThread();
     void start();
+
 
 };
 
