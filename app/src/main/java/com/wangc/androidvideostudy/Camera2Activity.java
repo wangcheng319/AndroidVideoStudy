@@ -174,16 +174,18 @@ public class Camera2Activity extends AppCompatActivity {
         mImageReaderPreview.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() { //可以在这里处理拍照得到的临时照片 例如，写入本地
             @Override
             public void onImageAvailable(ImageReader reader) {
-                // 获取捕获的照片数据
+                // 最后一帧数据
                 Image image = reader.acquireLatestImage();
-                Log.e(TAG,"preview image format: " +image.getFormat());
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[buffer.remaining()];
                 buffer.get(bytes);
 
-                if (h264Encoder != null){
-                    h264Encoder.putDate(bytes); //将一帧的数据传过去处理
+                try {
+                    startCodec(bytes);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+
                 image.close();
             }
         }, null);
@@ -240,91 +242,57 @@ public class Camera2Activity extends AppCompatActivity {
     /**
      * 开启编码
      * @param bytes
-     * @param i
-     * @param length
      */
-    private void startCodec(final byte[] bytes, int i, final int length) throws IOException {
+    private void startCodec(final byte[] bytes) throws IOException {
 
         File outFile = new File(Environment.getExternalStorageDirectory()+"/mycamera2.mp4");
         final BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outFile));
 
+        //MediaCodec初始化
         MediaCodec mediaCodec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC);
-
         MediaFormat mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, 1080, 1920);
         mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, 441000);
         mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 15);
         mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar);
-        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 5);
-
-
+        mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
         mediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         mediaCodec.start();
 
-//        mediaCodec.setCallback(new MediaCodec.Callback() {
-//            @Override
-//            public void onInputBufferAvailable(MediaCodec codec, int index) {
-//                ByteBuffer byteBuffer = codec.getInputBuffer(index);
-//                byteBuffer.put(bytes);
-//                codec.queueInputBuffer(index,0,length,1,BUFFER_FLAG_CODEC_CONFIG);
-//            }
-//
-//            @Override
-//            public void onOutputBufferAvailable(MediaCodec codec, int index, MediaCodec.BufferInfo info) {
-//                if(index>-1){
-//                    ByteBuffer outputBuffer = codec.getOutputBuffer(index);
-//                    byte[] bb = new byte[info.size];
-//                    outputBuffer.get(bb);
-//                    try {
-//                        outputStream.write(bb);
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                    codec.releaseOutputBuffer(index,false);
-//                }
-//            }
-//
-//            @Override
-//            public void onError(MediaCodec codec, MediaCodec.CodecException e) {
-//                codec.reset();
-//            }
-//
-//            @Override
-//            public void onOutputFormatChanged(MediaCodec codec, MediaFormat format) {
-//            }
-//        });
-
-
+        ByteBuffer[] inputBuffers = mediaCodec.getInputBuffers();
+        ByteBuffer[] outputBuffers = mediaCodec.getOutputBuffers();
         //向mediaCodec存数据
         int inputBufferIndex = mediaCodec.dequeueInputBuffer(-1);
         if (inputBufferIndex >= 0) {
-            ByteBuffer inputBuffer =  mediaCodec.getInputBuffer(inputBufferIndex);
+            ByteBuffer inputBuffer = inputBuffers[inputBufferIndex];
             inputBuffer.clear();
             //存放新采集的数据
-            inputBuffer.put(bytes, 0, length);
-            mediaCodec.queueInputBuffer(inputBufferIndex, 0, length,  0, 0);
-        }
+            inputBuffer.put(bytes, 0, bytes.length);
+            mediaCodec.queueInputBuffer(inputBufferIndex, 0, inputBuffers[inputBufferIndex].position(),  System.nanoTime() / 1000, 0);
 
-        //从mediaCodec取数据
-        MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-        int outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 0); //10
-        //循环解码，直到数据全部解码完成
-        while (outputBufferIndex >= 0) {
-            ByteBuffer outputBuffer = mediaCodec.getOutputBuffer(outputBufferIndex);
+            //从mediaCodec取数据
+            MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
+            int outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 0); //10
+            //循环解码，直到数据全部解码完成
+            while (outputBufferIndex >= 0) {
+                ByteBuffer outputBuffer = outputBuffers[outputBufferIndex];
 
-            byte[] outData = new byte[bufferInfo.size];
-            outputBuffer.get(outData);
+                byte[] outData = new byte[bufferInfo.size];
+                outputBuffer.get(outData);
 
-            try {
-                outputStream.write(outData, 0, outData.length);
-            } catch (IOException e) {
-                e.printStackTrace();
+                try {
+                    outputStream.write(outData, 0, outData.length);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                mediaCodec.releaseOutputBuffer(outputBufferIndex, false);
+                outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 0);
             }
 
-            mediaCodec.releaseOutputBuffer(outputBufferIndex, false);
-            bufferInfo = new MediaCodec.BufferInfo();
-            outputBufferIndex = mediaCodec.dequeueOutputBuffer(bufferInfo, 0);
         }
 
+        mediaCodec.stop();
+        mediaCodec.release();
     }
 
 
