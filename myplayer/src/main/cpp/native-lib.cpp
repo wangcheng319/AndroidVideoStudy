@@ -8,8 +8,10 @@
 #include <deque>
 #include <vector>
 #include <android/bitmap.h>
+#include <PcmToMp3Test.h>
 
 #include "iostream"
+#include "PcmToMp3Test.h"
 
 
 #define RGB565_R(p) ((((p) & 0xF800) >> 11) << 3)
@@ -39,56 +41,8 @@ extern "C"
 _JavaVM *javaVM = NULL;
 WCallJava *callJava = NULL;
 WFFmpeg *fFmpeg = NULL;
+PcmToMp3Test *mp3Test = NULL;
 
-
-extern "C"
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
-    jint result = -1;
-    javaVM = vm;
-    JNIEnv *env;
-    if (vm->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK) {
-
-        return result;
-    }
-    return JNI_VERSION_1_4;
-
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_wangc_myplayer_Wplayer_reday(JNIEnv *env, jobject instance, jstring source_) {
-
-    const char *source = env->GetStringUTFChars(source_, 0);
-
-    if (fFmpeg == NULL) {
-        if (callJava == NULL) {
-            callJava = new WCallJava(javaVM, env, &instance);
-        }
-        fFmpeg = new WFFmpeg(callJava, source);
-        fFmpeg->parpared();
-    }
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_ywl5320_myplayer_player_WlPlayer_n_1start(JNIEnv *env, jobject instance) {
-
-    // TODO
-    if (fFmpeg != NULL) {
-        fFmpeg->start();
-    }
-
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_wangc_myplayer_Wplayer_n_1start(JNIEnv *env, jobject instance) {
-
-    if (fFmpeg != NULL) {
-        fFmpeg->start();
-    }
-
-}
 
 
 /**
@@ -96,7 +50,8 @@ Java_com_wangc_myplayer_Wplayer_n_1start(JNIEnv *env, jobject instance) {
  */
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_wangc_mymusic_MainActivity_tranBitmap(JNIEnv *env, jobject instance, jobject bitmap) {
+Java_com_wangc_androidvideostudy_Camera2Activity_tranBitmap(JNIEnv *env, jobject instance,
+                                                            jobject bitmap) {
     AndroidBitmapInfo androidBitmapInfo;
     int ret = -1;
 
@@ -147,6 +102,16 @@ Java_com_wangc_mymusic_MainActivity_tranBitmap(JNIEnv *env, jobject instance, jo
             }
         }
     }
-
     AndroidBitmap_unlockPixels(env, bitmap);
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_wangc_myplayer_Demo_PcmToMp3(JNIEnv *env, jobject instance, jstring path_) {
+    const char *path = env->GetStringUTFChars(path_, 0);
+
+    mp3Test = new PcmToMp3Test();
+
+    env->ReleaseStringUTFChars(path_, path);
 }

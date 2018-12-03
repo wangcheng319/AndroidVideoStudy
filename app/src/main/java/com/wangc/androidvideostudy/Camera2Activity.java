@@ -89,6 +89,10 @@ public class Camera2Activity extends AppCompatActivity {
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
 
+    static {
+        System.loadLibrary("native-lib");
+    }
+
 
 
     @Override
@@ -140,6 +144,8 @@ public class Camera2Activity extends AppCompatActivity {
                 buffer.get(bytes);
                 Log.e(TAG,"拍照数据："+bytes);
                 final Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                //c++将图片变为灰色
+                tranBitmap(bitmap);
                 if (bitmap != null) {
                     imageView.setImageBitmap(bitmap);
                 }
@@ -199,6 +205,12 @@ public class Camera2Activity extends AppCompatActivity {
         });
 
     }
+
+    /**
+     * c++层处理图片，将图片变为灰色
+     * @param bitmap
+     */
+    private native void tranBitmap(Bitmap bitmap);
 
     private boolean supportH264Codec() {
         if (Build.VERSION.SDK_INT >= 18){
