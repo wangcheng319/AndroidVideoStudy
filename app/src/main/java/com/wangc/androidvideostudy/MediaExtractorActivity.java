@@ -18,6 +18,8 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 
 /**
@@ -26,7 +28,8 @@ import java.util.concurrent.Executors;
  */
 public class MediaExtractorActivity extends AppCompatActivity {
 
-    private MediaMuxer mediaMuxer;//用于合成
+    //用于合成
+    private MediaMuxer mediaMuxer;
     private MediaExtractor videoExtractor;
     private MediaExtractor audioExtractor;
     private int videoTrackIndex = -1;
@@ -35,8 +38,6 @@ public class MediaExtractorActivity extends AppCompatActivity {
 
     private MediaPlayer mediaPlayer;
     private SurfaceView surfaceView;
-    private String url1 = "http://v.yinyuetai.com/video/736496.mp4";
-    private String url2 = "http://v.yinyuetai.com/video/3260807";
 
 
     @Override

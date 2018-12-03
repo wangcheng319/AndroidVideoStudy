@@ -260,6 +260,8 @@ public class Camera2Activity extends AppCompatActivity {
 
         ByteBuffer[] inputBuffers = mediaCodec.getInputBuffers();
         ByteBuffer[] outputBuffers = mediaCodec.getOutputBuffers();
+
+
         //向mediaCodec存数据
         int inputBufferIndex = mediaCodec.dequeueInputBuffer(-1);
         if (inputBufferIndex >= 0) {

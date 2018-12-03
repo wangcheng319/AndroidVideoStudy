@@ -111,11 +111,14 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
         byte[] data = new byte[bufferSizeInBytes];
         int result = -1;
         while (isRecord){
+            //每次读取bufferSizeInBytes大小的字节数据到data中，0便是没偏移量
             result = audioRecord.read(data,0,bufferSizeInBytes);
             if (result!= AudioRecord.ERROR_INVALID_OPERATION){
                     try {
                         Log.e("+++","录音中："+data);
                         fileOutputStream.write(data);
+//                        playWithRecord(data);
+
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -125,6 +128,7 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
 
         try {
             fileOutputStream.close();
+            audioRecord.stop();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -137,6 +141,19 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
         audioRecord.release();
         audioRecord = null;
         Log.e("+++","录音结束");
+    }
+
+
+    private void playWithRecord(byte[] data) {
+        Log.e("+++","开始播放");
+        try {
+
+                    audioTrack.play();
+                    audioTrack.write(data,0,data.length);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void play() {
@@ -155,6 +172,7 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
                 if (readCount != 0 && readCount != -1) {
                     audioTrack.play();
                     audioTrack.write(tempBuffer, 0, readCount);
+                    Log.e("+++","readCount:"+readCount);
                 }
             }
 
