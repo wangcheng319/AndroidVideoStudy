@@ -10,9 +10,15 @@
 #include "AndroidLog.h"
 #include <deque>
 #include <vector>
+#include <android/asset_manager.h>
+
+/*引入ffmpeg的头文件大多需要这样，因为是C语言编写*/
+extern "C" {
+#include "libavcodec/avcodec.h"
+}
 
 #include <iostream>
-#define LOGE(FORMAT,...) __android_log_print(ANDROID_LOG_ERROR,"wangc",FORMAT,##__VA_ARGS__);
+#define LOGE(FORMAT, ...) __android_log_print(ANDROID_LOG_ERROR,"wangc",FORMAT,##__VA_ARGS__);
 using namespace std;
 
 Test::Test() {
@@ -55,7 +61,6 @@ Java_com_wangc_myplayer_Demo_callJava(JNIEnv *env, jobject instance) {
 
     //调用静态方法
     env->CallStaticVoidMethod(jclass1, env->GetStaticMethodID(jclass1, "staticMethod", "()V"));
-
 }
 
 

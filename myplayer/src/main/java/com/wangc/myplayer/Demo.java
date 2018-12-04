@@ -14,6 +14,7 @@ import android.util.Log;
 public class Demo {
     static {
         System.loadLibrary("native-lib");
+
     }
 
     /**
@@ -37,5 +38,8 @@ public class Demo {
      */
     public native void setUser(User user);
 
-    public native void PcmToMp3();
+    /**
+     * 获取FFmpeg配置
+     */
+    public native void getFFmpegConfig();
 }
