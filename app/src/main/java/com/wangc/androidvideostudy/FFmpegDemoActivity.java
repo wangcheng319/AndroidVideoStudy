@@ -25,6 +25,7 @@ public class FFmpegDemoActivity extends AppCompatActivity implements View.OnClic
             @Override
             public void onPrepared() {
                 Log.e("+++","onPrepared");
+                myPlayer.start();
             }
         });
     }

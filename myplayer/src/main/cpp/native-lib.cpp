@@ -151,3 +151,13 @@ Java_com_wangc_myplayer_MyPlayer_n_1prepare(JNIEnv *env, jobject instance, jstri
     fFmpeg = new WFFmpeg(callJava,source);
     fFmpeg->parpared();
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_wangc_myplayer_MyPlayer_n_1start(JNIEnv *env, jobject instance) {
+
+    if (fFmpeg != NULL) {
+        fFmpeg->start();
+    }
+
+}

@@ -16,12 +16,14 @@ public class MyPlayer {
 
     static {
         System.loadLibrary("native-lib");
-        System.loadLibrary("avcodec");
-        System.loadLibrary("avfilter");
-        System.loadLibrary("avformat");
-        System.loadLibrary("avutil");
-        System.loadLibrary("swresample");
-        System.loadLibrary("swscale");
+        System.loadLibrary("avcodec-57");
+        System.loadLibrary("avdevice-57");
+        System.loadLibrary("avfilter-6");
+        System.loadLibrary("avformat-57");
+        System.loadLibrary("avutil-55");
+        System.loadLibrary("postproc-54");
+        System.loadLibrary("swresample-2");
+        System.loadLibrary("swscale-4");
     }
 
     private String source;
@@ -35,6 +37,9 @@ public class MyPlayer {
         this.source = source;
     }
 
+    /**
+     * 准备
+     */
     public void prepare(){
         if (TextUtils.isEmpty(source)){
             Log.e("+++","source is empty");
@@ -49,6 +54,23 @@ public class MyPlayer {
         }).start();
     }
 
+    /**
+     * 开始解码
+     */
+    public void start()
+    {
+        if(TextUtils.isEmpty(source))
+        {
+            return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                n_start();
+            }
+        }).start();
+    }
+
     public void onCallPrepare(){
         if (onPrepareListener != null){
             onPrepareListener.onPrepared();
@@ -56,4 +78,6 @@ public class MyPlayer {
     }
 
     public native void n_prepare(String source);
+
+    public native void n_start();
 }
