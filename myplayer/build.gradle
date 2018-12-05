@@ -19,7 +19,8 @@ android {
             }
 
             ndk{
-                abiFilters "armeabi-v7a","arm64-v8a","x86","x86_64"
+                //ndk（v17）已不在支持mips、armeabi等CPU架构,降低NDK版本兼容armeabi
+                abiFilters "x86","armeabi"
             }
         }
 

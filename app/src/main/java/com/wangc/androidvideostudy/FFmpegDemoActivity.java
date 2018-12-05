@@ -21,6 +21,7 @@ public class FFmpegDemoActivity extends AppCompatActivity implements View.OnClic
         path = Environment.getExternalStorageDirectory()+"/test.mp3";
         myPlayer = new MyPlayer();
         myPlayer.setSource("http://www.ytmp3.cn/down/55494.mp3");
+//        myPlayer.setSource(path);
         myPlayer.setOnPrepareListener(new OnPrepareListener() {
             @Override
             public void onPrepared() {
