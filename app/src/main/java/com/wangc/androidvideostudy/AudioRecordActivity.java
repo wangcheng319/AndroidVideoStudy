@@ -102,7 +102,6 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
                 break;
             case R.id.btn_tran:
                 demo = new Demo();
-                demo.PcmToMp3();
                 break;
         }
     }

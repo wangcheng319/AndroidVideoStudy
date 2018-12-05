@@ -30,20 +30,21 @@ WCallJava::WCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj) {
         return;
     }
 
-    jmid_parpared = env->GetMethodID(jlz, "onCallParpared", "()V");
+    jmid_parpared = env->GetMethodID(jlz, "onCallPrepare", "()V");
 }
 
 WCallJava::~WCallJava() {
 
 }
 
-void WCallJava::onCallParpared(int type) {
+void WCallJava::onCallPrepare(int type) {
 
+    //主线程
     if(type == MAIN_THREAD)
     {
         jniEnv->CallVoidMethod(jobj, jmid_parpared);
     }
-    else if(type == CHILD_THREAD)
+    else if(type == CHILD_THREAD)//子线程
     {
         JNIEnv *jniEnv;
         if(javaVM->AttachCurrentThread(&jniEnv, 0) != JNI_OK)

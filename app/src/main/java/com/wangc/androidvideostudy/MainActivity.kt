@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity(),View.OnClickListener {
             btn_extractor->startActivity(Intent(this,MediaExtractorActivity::class.java))
             btn_jni->startActivity(Intent(this,JniTestActivity::class.java))
             btn_get_ffmpeg->{getConfig()}
+            btn_ffmpeg->startActivity(Intent(this,FFmpegDemoActivity::class.java))
         }
     }
 

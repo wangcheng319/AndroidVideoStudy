@@ -30,7 +30,7 @@ public:
     WCallJava(_JavaVM *javaVM, JNIEnv *env, jobject *obj);
     ~WCallJava();
 
-    void onCallParpared(int type);
+    void onCallPrepare(int type);
 
     void parpared();
     void decodeFFmpegThread();

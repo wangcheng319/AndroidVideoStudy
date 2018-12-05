@@ -29,7 +29,8 @@
         <activity android:name=".MediaExtractorActivity" />
         <activity android:name=".AudioRecordActivity" />
         <activity android:name=".Camera2Activity" />
-        <activity android:name=".JniTestActivity"></activity>
+        <activity android:name=".JniTestActivity" />
+        <activity android:name=".FFmpegDemoActivity"></activity>
     </application>
 
 </manifest>

@@ -15,6 +15,7 @@ add_library(
         src/main/cpp/WCallJava.cpp
         src/main/cpp/WFFmpeg.cpp
         src/main/cpp/Test.cpp
+        src/main/cpp/FFmpegTest.cpp
 )
 
 

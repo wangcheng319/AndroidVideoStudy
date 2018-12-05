@@ -17,6 +17,7 @@ extern "C"
 };
 
 
+
 class WFFmpeg {
 
 public:
@@ -29,7 +30,7 @@ public:
 
 
 public:
-    WFFmpeg();
+    WFFmpeg(WCallJava *callJava,const char* url);
     ~WFFmpeg();
 
     void parpared();

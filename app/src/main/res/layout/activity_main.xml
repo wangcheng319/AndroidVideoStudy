@@ -50,4 +50,11 @@
         android:text="获取ffmpeg配置"
         android:onClick="onClick"/>
 
+    <Button
+        android:id="@+id/btn_ffmpeg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ffmpeg使用"
+        android:onClick="onClick"/>
+
 </LinearLayout>

@@ -4,6 +4,7 @@
 
 #include "pthread.h"
 #include "WFFmpeg.h"
+#include "WCallJava.h"
 #include "Test.h"
 #include <deque>
 #include <vector>
@@ -11,6 +12,7 @@
 
 #include "iostream"
 #include "PcmToMp3Test.h"
+#include "FFmpegTest.h"
 
 
 #define RGB565_R(p) ((((p) & 0xF800) >> 11) << 3)
@@ -114,4 +116,38 @@ JNIEXPORT void JNICALL
 Java_com_wangc_myplayer_Demo_getFFmpegConfig(JNIEnv *env, jobject instance) {
 
     LOGE("配置=%s", avcodec_configuration())
+
+    FFmpegTest fFmpegTest;
+    fFmpegTest.mEnCode();
+}
+
+
+
+extern "C"
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
+    jint result = -1;
+    javaVM = vm;
+    JNIEnv *env;
+    if (vm->GetEnv((void **) &env, JNI_VERSION_1_4) != JNI_OK) {
+
+        return result;
+    }
+    return JNI_VERSION_1_4;
+
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_wangc_myplayer_MyPlayer_n_1prepare(JNIEnv *env, jobject instance, jstring source_) {
+    const char *source = env->GetStringUTFChars(source_, 0);
+
+    if (fFmpeg == NULL){
+        if (callJava == NULL){
+            callJava = new WCallJava(javaVM,env,&instance);
+        }
+    }
+
+    fFmpeg = new WFFmpeg(callJava,source);
+    fFmpeg->parpared();
 }
