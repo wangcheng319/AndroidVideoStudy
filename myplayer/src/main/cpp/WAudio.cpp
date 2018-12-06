@@ -4,7 +4,9 @@
 
 #include "WAudio.h"
 
-WAudio::WAudio() {
+WAudio::WAudio(Wstatus *wstatus) {
+    this->wstatus = wstatus;
+    wqueue = new Wqueue(wstatus);
 
 }
 

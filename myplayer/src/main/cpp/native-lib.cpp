@@ -15,6 +15,7 @@
 #include "FFmpegTest.h"
 
 
+
 #define RGB565_R(p) ((((p) & 0xF800) >> 11) << 3)
 #define RGB565_G(p) ((((p) & 0x7E0 ) >> 5)  << 2)
 #define RGB565_B(p) ( ((p) & 0x1F  )        << 3)
@@ -43,6 +44,7 @@ _JavaVM *javaVM = NULL;
 WCallJava *callJava = NULL;
 WFFmpeg *fFmpeg = NULL;
 PcmToMp3Test *mp3Test = NULL;
+Wstatus *wstatus = NULL;
 
 
 
@@ -148,7 +150,8 @@ Java_com_wangc_myplayer_MyPlayer_n_1prepare(JNIEnv *env, jobject instance, jstri
         }
     }
 
-    fFmpeg = new WFFmpeg(callJava,source);
+    wstatus = new Wstatus();
+    fFmpeg = new WFFmpeg(callJava,source,wstatus);
     fFmpeg->parpared();
 }
 

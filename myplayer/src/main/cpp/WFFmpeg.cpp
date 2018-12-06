@@ -9,10 +9,11 @@
 #include "AndroidLog.h"
 
 
-WFFmpeg::WFFmpeg(WCallJava *callJava, const char *url) {
+WFFmpeg::WFFmpeg(WCallJava *callJava, const char *url,Wstatus *wstatus) {
 
     this->callJava = callJava;
     this->url = url;
+    this->wstatus = wstatus;
 
 }
 
@@ -39,7 +40,7 @@ void WFFmpeg::decodeFFmpegThread() {
     //获取上下文
     pFormatCtx = avformat_alloc_context();
 
-    //打开文件
+    //打开文件,文件可以jni传递过来也可以char *url = "/storage/emulated/0/test.mp3";
     if (avformat_open_input(&pFormatCtx,url,NULL,NULL) != 0){
 
         LOGE("can not open url%s",url);
@@ -57,13 +58,12 @@ void WFFmpeg::decodeFFmpegThread() {
     for (int i = 0; i < pFormatCtx->nb_streams ; i++) {
         if (pFormatCtx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO){
             if (audio == NULL){
-                audio = new WAudio();
+                audio = new WAudio(wstatus);
                 audio->streamIndex = i;
                 audio->codecpar = pFormatCtx->streams[i]->codecpar;
             }
         }
     }
-
 
     //获取解码器
     AVCodec *avCodec = avcodec_find_decoder(audio->codecpar->codec_id);
@@ -116,8 +116,7 @@ void WFFmpeg::start() {
                 if (LOG_DEBUG) {
                     LOGE("解码第 %d 帧", count);
                 }
-                av_packet_free(&avPacket);
-                av_free(avPacket);
+                audio->wqueue->putAvPacket(avPacket);
 
             } else {
                 av_packet_free(&avPacket);
@@ -132,4 +131,14 @@ void WFFmpeg::start() {
             break;
         }
     }
+
+    while (audio->wqueue->getQueueSize()>0){
+        AVPacket *avPacket = av_packet_alloc();
+        audio->wqueue->getAvPacket(avPacket);
+        av_packet_free(&avPacket);
+        av_free(avPacket);
+        avPacket = NULL;
+    }
+
+    LOGE("解码完成");
 }

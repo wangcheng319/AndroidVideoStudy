@@ -16,6 +16,8 @@ add_library(
         src/main/cpp/WFFmpeg.cpp
         src/main/cpp/Test.cpp
         src/main/cpp/FFmpegTest.cpp
+        src/main/cpp/Wqueue.cpp
+        src/main/cpp/Wstatus.cpp
 )
 
 

@@ -26,11 +26,12 @@ public:
     pthread_t decodeThread;
     AVFormatContext *pFormatCtx = NULL;
     WAudio *audio = NULL;
+    Wstatus *wstatus;
 
 
 
 public:
-    WFFmpeg(WCallJava *callJava,const char* url);
+    WFFmpeg(WCallJava *callJava,const char* url,Wstatus *wstatus);
     ~WFFmpeg();
 
     void parpared();
