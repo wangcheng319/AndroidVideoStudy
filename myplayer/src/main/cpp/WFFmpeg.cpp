@@ -33,7 +33,7 @@ void WFFmpeg::parpared() {
 
 void WFFmpeg::decodeFFmpegThread() {
 
-    //注册解码器
+    //注册解码器，4.0版本后不需要这个函数
     av_register_all();
     //初始化网络
     avformat_network_init();

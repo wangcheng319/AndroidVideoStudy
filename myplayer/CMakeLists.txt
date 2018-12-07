@@ -83,4 +83,5 @@ target_link_libraries(
         swresample-2
         swscale-4
         -ljnigraphics
+        OpenSLES
         ${log-lib})
