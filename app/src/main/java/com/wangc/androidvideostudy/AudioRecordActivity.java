@@ -4,6 +4,9 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
+import android.media.MediaCodec;
+import android.media.MediaCodecInfo;
+import android.media.MediaFormat;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * AudioRecord录音 pcm
@@ -42,16 +46,16 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
     private int bufferSizeInBytes;
     //播放
     private int bufferSize;
-    //存放文件
+    //存放pcm文件
     private static final String filePath = Environment.getExternalStorageDirectory()+"/test.pcm";
+
+
+
 
     private boolean isRecord = false;
     private File file;
-    private Demo demo;
 
-    static {
-        System.loadLibrary("native-lib");
-    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,7 +105,6 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
                 }).start();
                 break;
             case R.id.btn_tran:
-                demo = new Demo();
                 break;
         }
     }
@@ -115,6 +118,7 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
             e.printStackTrace();
         }
 
+        AACEncode aacEncode = new AACEncode();
         audioRecord.startRecording();
         isRecord = true;
 
@@ -127,23 +131,18 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
                     try {
                         Log.e("+++","录音中："+data);
                         fileOutputStream.write(data);
-//                        playWithRecord(data);
-
-
+                        aacEncode.offerEncoder(data);
                     } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
             }
         }
 
-        try {
-            fileOutputStream.close();
-            audioRecord.stop();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
+
+
 
     private void stopRecord() {
         isRecord = false;
@@ -173,6 +172,7 @@ public class AudioRecordActivity extends AppCompatActivity implements View.OnCli
             DataInputStream dis = new DataInputStream(new FileInputStream(file));
             android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
             byte[] tempBuffer = new byte[bufferSize];
+            //总共读取的数量
             int readCount = 0;
             while (dis.available() > 0) {
                 readCount= dis.read(tempBuffer);
