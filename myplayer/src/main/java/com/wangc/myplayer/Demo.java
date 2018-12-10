@@ -2,6 +2,9 @@ package com.wangc.myplayer;
 
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @ProjectName: AndroidVideoStudy
  * @Package: com.wangc.myplayer
@@ -34,12 +37,25 @@ public class Demo {
 
     /**
      * java向native传递对象
-     * @param user
+     * @param users
      */
-    public native void setUser(User user);
+    public native void setUser(User users);
 
     /**
      * 获取FFmpeg配置
      */
     public native void getFFmpegConfig();
+
+    /**
+     * java传递string到native
+     */
+
+    public native String setString(String s);
+
+    /**
+     * c++ 传递对象到java
+     * @return
+     */
+    public native User getUser();
+
 }

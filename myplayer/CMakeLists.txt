@@ -18,6 +18,7 @@ add_library(
         src/main/cpp/FFmpegTest.cpp
         src/main/cpp/Wqueue.cpp
         src/main/cpp/Wstatus.cpp
+#        src/main/cpp/OpenSlEsTest.cpp
 )
 
 

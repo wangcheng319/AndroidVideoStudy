@@ -13,6 +13,7 @@
 #include "iostream"
 #include "PcmToMp3Test.h"
 #include "FFmpegTest.h"
+#include "OpenSlEsTest.h"
 
 
 
@@ -165,49 +166,8 @@ Java_com_wangc_myplayer_MyPlayer_n_1start(JNIEnv *env, jobject instance) {
 
 }
 
-/**
- * opsles播放pcm数据
- */
-#include <SLES/OpenSLES.h>
-#include <SLES/OpenSLES_Android.h>
-SLObjectItf  engineObject = NULL;
-SLEngineItf  engineEngine =NULL;
-SLObjectItf  outputMixObjext = NULL;
-SLEnvironmentalReverbItf outputMixEnvironmentalReverb = NULL;
-SLEnvironmentalReverbSettings reverbSettings = SL_I3DL2_ENVIRONMENT_PRESET_STONECORRIDOR;
-SLObjectItf  pcmPlayer = NULL;
-SLPlayItf  pcmPlayerItf = NULL;
-SLAndroidSimpleBufferQueueItf  pcmBufferQueue = NULL;
-
-FILE *pcmFile;
-void *buffer;
-uint8_t  *out_buffer;
 
 
-int getPcmData(void **pcm){
-    int size = 0;
-    while (!feof(pcmFile)){
-        size = fread(out_buffer,1,44100*2*2,pcmFile);
-        if (out_buffer == NULL){
-            LOGE("读取数据完毕");
-            break;
-        } else{
-            LOGE("读取中……");
-        }
-
-        *pcm = out_buffer;
-        break;
-    }
-
-    return size ;
-}
-
-void pcmBufferCallBack(SLAndroidSimpleBufferQueueItf bufferQueueItf,void *context){
-    int size = getPcmData(&buffer);
-    if (buffer != NULL){
-        (*pcmBufferQueue)->Enqueue(pcmBufferQueue,buffer,size);
-    }
-}
 
 
 extern "C"
@@ -216,58 +176,9 @@ Java_com_wangc_androidvideostudy_OpenslEsActivity_playPcm(JNIEnv *env, jobject i
                                                           jstring path_) {
     const char *path = env->GetStringUTFChars(path_, 0);
 
-    pcmFile = fopen(path,"r");
-    if (pcmFile == NULL){
-        LOGE("打开PCM文件失败");
-        return;
-    }
+//    OpenSlEsTest *openSlEsTest = new OpenSlEsTest(path);
+//    openSlEsTest->beginPlay();
 
-
-    out_buffer = static_cast<uint8_t *>(malloc(44100 * 2 * 2));
-
-
-    slCreateEngine(&engineObject,0,0,0,0,0);
-    (*engineObject)->Realize(engineObject,SL_BOOLEAN_FALSE);
-    (*engineObject)->GetInterface(engineObject,SL_IID_ENGINE,&engineEngine);
-
-    const SLInterfaceID  mids[1] = {SL_IID_ENVIRONMENTALREVERB};
-    const SLboolean  mreq[1] = {SL_BOOLEAN_FALSE};
-
-    (*engineEngine)->CreateOutputMix(engineEngine,&outputMixObjext,1,mids,mreq);
-    (*outputMixObjext)->Realize(outputMixObjext,SL_BOOLEAN_FALSE);
-    (*outputMixObjext)->GetInterface(outputMixObjext,SL_BOOLEAN_FALSE,&outputMixEnvironmentalReverb);
-
-
-    (*outputMixEnvironmentalReverb)->SetEnvironmentalReverbProperties(outputMixEnvironmentalReverb,&reverbSettings);
-
-    //创建播放器
-
-    SLDataLocator_AndroidBufferQueue androidBufferQueue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,2};
-    SLDataFormat_PCM pcm = {SL_DATAFORMAT_PCM,
-                            2,
-                            SL_SAMPLINGRATE_44_1,
-                            SL_PCMSAMPLEFORMAT_FIXED_16,
-                            SL_PCMSAMPLEFORMAT_FIXED_16,
-                            SL_SPEAKER_FRONT_LEFT|SL_SPEAKER_FRONT_RIGHT,
-                            SL_BYTEORDER_LITTLEENDIAN
-                            };
-    SLDataSource slDataSource = {&androidBufferQueue,&pcm};
-    SLDataLocator_OutputMix outputMix = {SL_DATALOCATOR_OUTPUTMIX,outputMixObjext};
-    SLDataSink androidSink = {&outputMix,NULL};
-    const  SLInterfaceID  ids[1] = {SL_IID_BUFFERQUEUE};
-    const  SLboolean  req[1] = {SL_BOOLEAN_TRUE};
-
-    (*engineEngine)->CreateAudioPlayer(engineEngine,&pcmPlayer,&slDataSource,&androidSink,1,ids,req);
-
-    (*pcmPlayer)->Realize(pcmPlayer,SL_BOOLEAN_FALSE);
-    (*pcmPlayer)->GetInterface(pcmPlayer,SL_IID_PLAY,&pcmPlayerItf);
-
-    //设置缓冲
-    (*pcmPlayer)->GetInterface(pcmPlayer,SL_IID_BUFFERQUEUE,&pcmBufferQueue);
-    (*pcmBufferQueue)->RegisterCallback(pcmBufferQueue,pcmBufferCallBack,NULL);
-
-    (*pcmPlayerItf)->SetPlayState(pcmPlayerItf,SL_PLAYSTATE_PLAYING);
-    pcmBufferCallBack(pcmBufferQueue,NULL);
 
     env->ReleaseStringUTFChars(path_, path);
 }

@@ -12,7 +12,6 @@
 #include <vector>
 #include <android/asset_manager.h>
 
-/*引入ffmpeg的头文件大多需要这样，因为是C语言编写*/
 extern "C" {
 #include "libavcodec/avcodec.h"
 }
@@ -59,6 +58,7 @@ Java_com_wangc_myplayer_Demo_callJava(JNIEnv *env, jobject instance) {
     (*env).CallVoidMethod(jobject1, jmethodID1);
 
 
+
     //调用静态方法
     env->CallStaticVoidMethod(jclass1, env->GetStaticMethodID(jclass1, "staticMethod", "()V"));
 }
@@ -67,7 +67,6 @@ Java_com_wangc_myplayer_Demo_callJava(JNIEnv *env, jobject instance) {
 
 /**
  * 获取java传递来的对象数据
- * 参考：https://blog.csdn.net/lintax/article/details/51759270
  */
 extern "C"
 JNIEXPORT void JNICALL
@@ -99,5 +98,123 @@ Java_com_wangc_myplayer_Demo_setUser(JNIEnv *env, jobject instance, jobject user
     int *intArr = (int *) env->GetIntArrayElements(array1, 0);
 
 }
+
+/**
+ * jstring 转 c++  string
+ */
+std::string jstring2str(JNIEnv* env1, jstring jstr) {
+    char*   rtn   =   NULL;
+
+    jclass   clsstring   =   env1->FindClass("java/lang/String");
+    jstring   strencode   =   env1->NewStringUTF("GB2312");
+    jmethodID   mid   =   env1->GetMethodID(clsstring,   "getBytes",   "(Ljava/lang/String;)[B");
+    jbyteArray   barr=   (jbyteArray)env1->CallObjectMethod(jstr,mid,strencode);
+    jsize   alen   =   env1->GetArrayLength(barr);
+    jbyte*   ba   =   env1->GetByteArrayElements(barr,JNI_FALSE);
+    if(alen   >   0)
+    {
+        rtn   =   (char*)malloc(alen+1);
+        memcpy(rtn,ba,alen);
+        rtn[alen]=0;
+    }
+    env1->ReleaseByteArrayElements(barr,ba,0);
+    std::string stemp(rtn);
+    free(rtn);
+    return   stemp;
+}
+
+/**
+ * c++ string  转 char
+ */
+char* string2char( std::string str)
+{
+    std::string s1 = str;
+    char *data;
+    int len = s1.length();
+    data = (char *)malloc((len+1)*sizeof(char));
+    s1.copy(data,len,0);
+    return data;
+}
+
+
+
+/**
+ * 获取java传递的string，拼接后返回
+ */
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_wangc_myplayer_Demo_setString(JNIEnv *env, jobject instance, jstring s_) {
+    //得到char * 字符串
+    const char *s = env->GetStringUTFChars(s_, 0);
+    LOGE("接收string=%s",s);
+    //将jstring转为c++ 中的string
+    string string1 = jstring2str(env,s_);
+    //c++  拼接字符串
+    string1.append(" c++");
+
+    LOGE("拼接后string=%s",string1.c_str());
+    //将c++中的string 转为jstring
+    jstring  result = env->NewStringUTF(string1.c_str());
+
+    return result;
+}
+
+
+//定义与java对应的结构体，也可以不用定义，都采取直接赋值
+typedef struct {
+ string name;
+ int age;
+ bool sex;
+ double height;
+ int scores[];
+} User;
+
+/**
+ * c++  传递对象到java
+ */
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_com_wangc_myplayer_Demo_getUser(JNIEnv *env, jobject instance) {
+
+    //创建一个对象，保存数据，方便接下来赋值给新建的对象
+    User user1;
+    user1.age = 3;
+    user1.name = "lisi";
+    user1.sex = false;
+    user1.height = 100.0;
+//    user1.scores = {1,2,3};
+
+    //获取对应的类
+    jclass jclass1 = env->FindClass("com/wangc/myplayer/User");
+    //获取对应的字段
+    jfieldID age = env->GetFieldID(jclass1,"age","I");
+    jfieldID name = env->GetFieldID(jclass1,"name","Ljava/lang/String;");
+    jfieldID sex = env->GetFieldID(jclass1,"sex","Z");
+    jfieldID height = env->GetFieldID(jclass1,"height","D");
+//    jfieldID scores = env->GetFieldID(jclass1,"scores","[I");
+
+
+    //创建对象
+    jobject user = env->AllocObject(jclass1);
+    //为属性赋值
+    env->SetIntField(user,age,user1.age);
+    env->SetObjectField(user,name,env->NewStringUTF(user1.name.c_str()));
+    env->SetBooleanField(user,sex,user1.sex);
+    env->SetDoubleField(user,height,user1.height);
+
+
+    return user;
+
+
+}
+
+
+
+
+
+
+
+
+
 
 
