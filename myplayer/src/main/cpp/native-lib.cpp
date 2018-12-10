@@ -222,6 +222,7 @@ Java_com_wangc_androidvideostudy_OpenslEsActivity_playPcm(JNIEnv *env, jobject i
         return;
     }
 
+
     out_buffer = static_cast<uint8_t *>(malloc(44100 * 2 * 2));
 
 

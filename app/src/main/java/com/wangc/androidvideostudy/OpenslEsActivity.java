@@ -24,9 +24,17 @@ public class OpenslEsActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onClick(View v) {
-        String path = Environment.getExternalStorageDirectory()+"/test.pcm";
-        playPcm(path);
-        Log.e("+++","播放");
+//        String path = Environment.getExternalStorageDirectory()+"/test.pcm";
+
+        final String path = "mnt/sdcard/DCIM/test.pcm";
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                playPcm(path);
+                Log.e("+++","播放");
+            }
+        }).start();
+
     }
 
     public native void playPcm(String path);
