@@ -9,7 +9,8 @@
 
 #include <stdio.h>
 #include <string>
-using namespace std;
+//头文件不应该包含using申明
+//using namespace std;
 
 extern "C"
 {

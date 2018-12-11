@@ -59,7 +59,7 @@ Java_com_wangc_myplayer_Demo_callJava(JNIEnv *env, jobject instance) {
 
 
 
-    //调用静态方法
+    //调用静态方法,只需要获取到类对象就可以
     env->CallStaticVoidMethod(jclass1, env->GetStaticMethodID(jclass1, "staticMethod", "()V"));
 }
 
@@ -144,7 +144,7 @@ char* string2char( std::string str)
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_com_wangc_myplayer_Demo_setString(JNIEnv *env, jobject instance, jstring s_) {
-    //得到char * 字符串
+    //将java中的字符串转换成c语言可以处理的字符串
     const char *s = env->GetStringUTFChars(s_, 0);
     LOGE("接收string=%s",s);
     //将jstring转为c++ 中的string
@@ -155,6 +155,7 @@ Java_com_wangc_myplayer_Demo_setString(JNIEnv *env, jobject instance, jstring s_
     LOGE("拼接后string=%s",string1.c_str());
     //将c++中的string 转为jstring
     jstring  result = env->NewStringUTF(string1.c_str());
+
 
     return result;
 }
