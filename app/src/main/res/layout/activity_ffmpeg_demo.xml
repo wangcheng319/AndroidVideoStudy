@@ -15,4 +15,11 @@
         android:text="准备"
         android:onClick="onClick"/>
 
+    <Button
+        android:id="@+id/btn_get_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="获取音视频信息"
+        android:onClick="onClick"/>
+
 </LinearLayout>

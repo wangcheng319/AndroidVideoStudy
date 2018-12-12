@@ -10,6 +10,13 @@
 #define ANDROIDVIDEOSTUDY_FFMPEGTEST_H
 #define LOGE(FORMAT, ...) __android_log_print(ANDROID_LOG_ERROR,"wangc",FORMAT,##__VA_ARGS__);
 
+
+extern "C"
+{
+#include "libavformat/avformat.h"
+#include <libavcodec/avcodec.h>
+};
+
 class FFmpegTest {
 
 

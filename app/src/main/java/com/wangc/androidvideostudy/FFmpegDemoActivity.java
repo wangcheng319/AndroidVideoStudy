@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import com.wangc.myplayer.FFmpegUtils;
 import com.wangc.myplayer.MyPlayer;
 import com.wangc.myplayer.OnPrepareListener;
 
@@ -36,6 +37,9 @@ public class FFmpegDemoActivity extends AppCompatActivity implements View.OnClic
         switch (v.getId()){
             case R.id.btn_prepare:
                 myPlayer.prepare();
+                break;
+            case R.id.btn_get_info:
+                FFmpegUtils.getVideoInfo();
                 break;
         }
     }
